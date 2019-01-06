@@ -1,0 +1,219 @@
+﻿<div ng-init="onLoad()">
+    <!--<i class="fa fa-refresh" aria-hidden="true" id="refresh" ng-click="getLocation()"></i>-->
+    <i class="fa fa-cog" aria-hidden="true" id="settings" data-toggle="modal" data-target="#myModal"></i>
+
+    <div class="header">
+        <div id="gallery" class="" style="background-color: black">
+            <img class="googleImage" ng-repeat="pic in images" ng-src="{{pic}}" data-toggle="modal" data-target="#enlargePicModal" ng-click="setPic(pic)">
+        </div>
+        <div class="header" ng-show="places[0].icon"
+             ng-click="getDetails(places[0])">
+        </div>
+        <div class="floatingCircle mainFloatingCircle">
+            <div class="placeTab">
+                <div class="placeIcon" ng-bind-html="updateIcon(placeDetails.result.icon, placeDetails.result.types)"></div>
+                <div ng-bind="placeDetails.result.name" class="headerTitle2"></div>
+            </div>
+        </div>
+    </div>
+
+    <table class="nav" ng-show="places">
+        <tr class="navTab" style="display: table-cell;" ng-repeat="result in places | orderBy: 'distanceFromMe'" ng-click="getDetails(result)" ng-show="$index >= 1">
+            <td>
+                <div class="placeIcon" ng-bind-html="updateIcon(result.icon, result.types)"></div>
+                <div ng-bind="tabName(result.name)" class="headerTitle2"></div>
+            </td>
+        </tr>
+    </table>
+
+    <i class="fa fa-caret-left arrow" aria-hidden="true" style="left: 7px;"></i>
+    <i class="fa fa-caret-right arrow" aria-hidden="true" style="right: 7px;"></i>
+
+    <div id="whereAmI">
+
+        <div ng-show="placeDetails.result.opening_hours.open_now">
+            <span ng-bind="isOpen" id="isOpen"></span>
+        </div>
+
+        <div ng-show="placeDetails.result.vicinity">
+            <span class="detailLabel">כתובת:</span>
+            <span ng-bind="placeDetails.result.vicinity"></span>
+        </div>
+
+        <div ng-show="(placeDetails.result.opening_hours.periods) && (placeDetails.result.opening_hours.periods.length != 1)">
+            <span class="detailLabel">שעות פתיחה:</span>
+            <table class="timeTable">
+                <tr class="timeTableHeader">
+                    <th ng-show="placeDetails.result.opening_hours.periods[0]">א'</th>
+                    <th ng-show="placeDetails.result.opening_hours.periods[1]">ב'</th>
+                    <th ng-show="placeDetails.result.opening_hours.periods[2]">ג'</th>
+                    <th ng-show="placeDetails.result.opening_hours.periods[3]">ד'</th>
+                    <th ng-show="placeDetails.result.opening_hours.periods[4]">ה'</th>
+                    <th ng-show="placeDetails.result.opening_hours.periods[5]">ו'</th>
+                    <th ng-show="placeDetails.result.opening_hours.periods[6]">ש</th>
+                </tr>
+                <tr>
+                    <td ng-repeat="day in placeDetails.result.opening_hours.periods">
+                        <span ng-bind="arrangeHour(day.open.time)"></span>:<span ng-bind="arrangeMin(day.open.time)"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td ng-repeat="day in placeDetails.result.opening_hours.periods">
+                        <span ng-bind="arrangeHour(day.close.time)"></span>:<span ng-bind="arrangeMin(day.close.time)"></span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div ng-show="placeDetails.result.rating">
+            <span class="detailLabel">דירוג ממוצע:</span>
+            <i class="fa fa-star star" aria-hidden="true"></i>
+            <span ng-bind="placeDetails.result.rating"></span><span>/5</span>
+        </div>
+
+        <div ng-show="placeDetails.result.price_level">
+            <span class="detailLabel">רמת מחירים:</span>
+            <span ng-bind="placeDetails.result.price_level"></span>
+        </div>
+
+        <div ng-show="placeDetails.result.formatted_phone_number" style="direction: ltr;">
+            <i class="fa fa-phone" aria-hidden="true" style="font-size: 24px; margin-right: 5px; color: darkblue; vertical-align: middle;"></i>
+            <span ng-bind="placeDetails.result.formatted_phone_number" ng-click="callNumber(placeDetails.result.international_phone_number)" style="color: #337ab7; font-weight: bolder;"></span>
+        </div>
+
+        <div ng-show="placeDetails.result.website" style="direction: ltr; word-wrap: break-word;">
+            <i class="fa fa-globe" aria-hidden="true" style="float: left; font-size: 24px; margin-right: 5px; color: darkblue; vertical-align: middle;" "></i>
+            <a href="{{placeDetails.result.website}}" style="font-weight: bolder;">
+                <span ng-bind="formatWebsite(placeDetails.result.website)"></span>
+            </a>
+        </div>
+
+        <!--<div ng-show="images">
+            <span class="detailLabel">תמונות:</span>
+            <div id="gallery" style="background-color: black">
+                <img class="googleImage" ng-repeat="pic in images" ng-src="{{pic}}" data-toggle="modal" data-target="#enlargePicModal" ng-click="setPic(pic)">
+            </div>
+        </div>-->
+
+        <div ng-show="instPhotos">
+            <span class="detailLabel">תמונות אינסטגרם שתויגו כאן:</span>
+            <div id="gallery" style="background-color: black">
+                <div ng-repeat="instPic in instPhotos">
+                    <img class="googleImage" ng-src="{{instPic.url}}" data-toggle="modal" data-target="#enlargePicModal" ng-click="setPic(instPic.url)">
+                    <a href="{{instPic.userLink}}">
+                        <div class="instUserLabel" style="background-color: black; opacity: 0.6; height: 20px; position: relative; margin-bottom: -19px;">
+                        </div>
+                        <div class="instUserLabel">
+                            <img ng-src="{{instPic.userPic}}" class="instUserImage">
+                            <span ng-bind="instPic.userName"></span><span>@</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="newInstPic">
+                    <i class="fa fa-instagram instAdd" aria-hidden="true"></i>
+                    <span class="instAdd" style="font-size: 16px !important">הוספת תמונה</span>
+                </div>
+            </div>
+        </div>
+
+            <div ng-show="placeDetails.result && wikiData">
+                <span class="detailLabel">פרטים נוספים:</span>
+                <span ng-bind-html="wikiData"></span>
+            </div>
+
+            <div ng-show="placeDetails.result.reviews">
+                <span class="detailLabel">תגובות:</span>
+                <div ng-repeat="review in placeDetails.result.reviews" class="review">
+                    <span ng-bind="getDate(review.time)" style="float: left; font-size: 11px;"></span>
+                    <img ng-src="{{review.profile_photo_url}}" style="width: 30px;" />
+                    <a href="{{review.author_url}}"><span ng-bind="review.author_name"></span></a>
+                    <br />
+                    <span class="detailLabel" ng-show="review.rating">דירוג:</span>
+                    <i class="fa fa-star star" aria-hidden="true" ng-repeat="i in drawStars(review.rating) track by $index"></i>
+                    <br />
+                    <span class="detailLabel" ng-show="review.text">תגובה:</span>
+                    <span ng-bind="review.text"></span>
+                </div>
+            </div>
+
+
+        <!--<div>
+            <span class="detailLabel" ng-click="addReview(placeDetails.result.place_id)">הוסף תגובה</span>
+        </div>-->
+
+        </div>
+</div>
+
+<a href="{{placeDetails.result.url}}" style="font-weight: bolder;" ng-show="placeDetails.result.url">
+    <div class="floatingCircle">
+        <img src="images/walk.png" style="display: block; margin: auto; text-align: center; width: 15px; margin-top: 10px;" />
+        <span ng-bind="distanceFromMe" class="distance"></span>
+    </div>
+</a>
+
+<div class="floatingCircle" ng-hide="placeDetails.result.url">
+    <img src="images/walk.png" style="display: block; margin: auto; text-align: center; width: 15px; margin-top: 10px; font-weight: bolder;" />
+    <span ng-bind="distanceFromMe" class="distance"></span>
+</div>
+
+
+<!-- Settings -->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">הגדרות</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <p>חפש ברדיוס:</p>
+                    <select class="form-control" id="changeDistance">
+                        <option value="200">200 מטר</option>
+                        <option value="500">500 מטר</option>
+                        <option value="1000">1 ק"מ</option>
+                        <option value="2000">2 ק"מ</option>
+                        <option value="5000">5 ק"מ</option>
+                    </select>
+                </div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <p>הצג:</p>
+                    <table class="searchTypes squaredtwo">
+                        <tr>
+                            <td><input type="checkbox" name="vehicle" value="Car" checked>מסעדות</td>
+                            <td><input type="checkbox" name="vehicle" value="Car" checked>בתי מלון</td>
+                            <td><input type="checkbox" name="vehicle" value="Car" checked>בתי עסק</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" name="vehicle" value="Car" checked>חנויות</td>
+                            <td><input type="checkbox" name="vehicle" value="Car" checked>חניונים</td>
+                            <td><input type="checkbox" name="vehicle" value="Car" checked>מקומות עניין</td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="width: 50%">
+                    <input class=" form-control" type="button" value="בחר הכל" style="width: 50%; float: right;" id="select-all" ng-click="selectAll(this)" />
+                    <input class="form-control" type="button" value="נקה הכל" style="width: 50%; float: left;" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">סגירה</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="enlargePicModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-body">
+                <img ng-src="{{currentPic}}" style="width: 100%" />
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,24 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.maayan.whereami"
+        },
+        "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "com.maayan.whereami"
+        },
+        "mx.ferreyra.callnumber": {
+            "PACKAGE_NAME": "com.maayan.whereami"
+        },
+        "cordova-plugin-inappbrowser": {
+            "PACKAGE_NAME": "com.maayan.whereami"
+        }
+    },
+    "dependent_plugins": {}
+}
